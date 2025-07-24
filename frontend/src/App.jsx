@@ -1,60 +1,119 @@
-// App.jsx
-import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/Layout";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import React, { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
 import Home from "./pages/Home";
-import MealPlanner from "./pages/MealPlanner";
+import SavedMeals from "./pages/SavedMeals";
+import DailySummary from "./pages/DailySummary";
+import MealSuggestion from "./components/MealSuggestions";
+import Sidebar from "./components/Sidebar";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import Profile from "./pages/UserProfile";
 
+function App() {
+  const [user, setUser] = useState(null);
 
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
-// Child Pages for "Suggest My Week"
-import Breakfast from "./pages/Suggest/Breakfast";
-import Lunch from "./pages/Suggest/Lunch";
-import Dinner from "./pages/Suggest/Dinner";
-import IndianCuisine from "./pages/Suggest/IndianCuisine";
-import MexicanCuisine from "./pages/Suggest/MexicanCuisine";
-import ItalianCuisine from "./pages/Suggest/ItalianCuisine";
-import ThaiCuisine from "./pages/Suggest/ThaiCuisine";
-import ChineseCuisine from "./pages/Suggest/ChineseCuisine";
-import DietFood from "./pages/Suggest/DietFood";
-import Starters from "./pages/Suggest/Starters";
+  // Save user to localStorage on login/signup
+  const handleLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
 
-const App = () => {
+  // Clear user from localStorage on logout
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
+  // PrivateRoute component to guard routes that need authentication
+  const PrivateRoute = ({ children }) => {
+    return user ? children : <Navigate to="/login" replace />;
+  };
+
   return (
-    <Routes>
-      {/* 🔐 Protected Routes - Require Authentication */}
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Navigate to="/home" replace />} />
-        <Route path="home" element={<Home />} />
-        <Route path="mealplanner" element={<MealPlanner />} />
-        
-       
-        <Route path="suggest/breakfast" element={<Breakfast />} />
-        <Route path="suggest/lunch" element={<Lunch />} />
-        <Route path="suggest/dinner" element={<Dinner />} />
-        <Route path="suggest/indiancuisine" element={<IndianCuisine />} />
-        <Route path="suggest/mexicancuisine" element={<MexicanCuisine />} />
-        <Route path="suggest/italiancuisine" element={<ItalianCuisine />} />
-        <Route path="suggest/thaicuisine" element={<ThaiCuisine />} />
-        <Route path="suggest/chinesecuisine" element={<ChineseCuisine />} />
-        <Route path="suggest/dietfood" element={<DietFood />} />
-        <Route path="suggest/starters" element={<Starters />} />
-      </Route>
+    <Router>
+      <div className="flex min-h-screen">
+        {/* Show Sidebar only if user is logged in */}
+        {user && <Sidebar user={user} onLogout={handleLogout} />}
 
-      {/* 🔓 Public Routes - No Authentication Needed */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-    </Routes>
+        <main className="flex-1 p-4 bg-gray-100">
+          <Routes key={user ? user._id : "guest"}>
+            {/* Public routes */}
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
+
+            {/* Private routes */}
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Home user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/saved-meals"
+              element={
+                <PrivateRoute>
+                  <SavedMeals user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/summary"
+              element={
+                <PrivateRoute>
+                  <DailySummary user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/meal-suggestions"
+              element={
+                <PrivateRoute>
+                  <MealSuggestion user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  {/* 👇 Pass setUser here to allow name update in Profile */}
+                  <Profile user={user} setUser={setUser} />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Catch-all fallback route */}
+            <Route
+              path="*"
+              element={
+                user ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
-};
+}
 
 export default App;

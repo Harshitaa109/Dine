@@ -1,22 +1,15 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const app = require("./app");
+// backend/index.js
 
+const dotenv = require("dotenv");
 dotenv.config();
+
+const app = require("./app");
+const connectDB = require("./config/db");
 
 const PORT = process.env.PORT || 5000;
 
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
-    app.listen(PORT, () => {
-      console.log(`🚀 Server is running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
+});

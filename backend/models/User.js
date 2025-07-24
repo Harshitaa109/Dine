@@ -1,45 +1,11 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, "Email is required"],
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters"],
-    },
-  },
-  { timestamps: true }
-);
-
-// ✅ Hash password before saving (only if modified)
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
-  }
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String }, // optional or keep if you want plain text (not recommended)
 });
 
-// ✅ Instance method to compare passwords
-userSchema.methods.comparePassword = async function (rawPassword) {
-  return await bcrypt.compare(rawPassword, this.password);
-};
+// Remove pre-save hook and password comparison method
 
 module.exports = mongoose.model("User", userSchema);

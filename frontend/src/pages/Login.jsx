@@ -1,102 +1,89 @@
-import React, { useState, useContext } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../contexts/UserContext.jsx";
+import { useNavigate, Link } from "react-router-dom";
 
-const Login = () => {
+function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+
   const navigate = useNavigate();
 
-  const { setUser } = useContext(UserContext); // ✅ Access context
-
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setErrorMsg("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post("http://localhost:5000/api/users/login", {
         email,
         password,
       });
 
-      const token = res?.data?.token;
-      const user = res?.data?.user;
+      // Save user data and token
+      onLogin(res.data);
+      localStorage.setItem("token", res.data.token);
 
-      if (token && user) {
-        localStorage.setItem("token", token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setUser(user); // ✅ update user context
-        navigate("/mealplanner");
-      } else {
-        throw new Error("Invalid response: Missing token or user.");
-      }
+      // Navigate to home
+      navigate("/");
     } catch (err) {
-      const message =
-        err?.response?.data?.message || "Something went wrong. Try again.";
-      setErrorMsg(message);
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-700">
-          Login to Meal Planner 🍽️
-        </h2>
+    <div className="max-w-md mx-auto mt-20 p-6 bg-white shadow-md rounded">
+      <h2 className="text-2xl font-semibold mb-4 text-center">Login</h2>
 
-        {errorMsg && (
-          <div className="mb-4 text-sm text-red-500 text-center">
-            {errorMsg}
-          </div>
-        )}
+      {error && (
+        <p className="text-red-500 text-center mb-4 transition-all duration-300">
+          {error}
+        </p>
+      )}
 
-        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-600">
-          Email
-        </label>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          id="email"
           type="email"
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="w-full px-4 py-2 border rounded"
           required
         />
 
-        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-600">
-          Password
-        </label>
         <input
-          id="password"
           type="password"
-          className="w-full px-4 py-2 border rounded-md mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          className="w-full px-4 py-2 border rounded"
           required
         />
 
         <button
           type="submit"
           disabled={loading}
-          className={`w-full text-white font-semibold py-2 rounded-md transition duration-200 ${
+          className={`w-full text-white py-2 rounded ${
             loading
-              ? "bg-blue-300 cursor-not-allowed"
+              ? "bg-blue-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
+
+      <p className="text-center mt-4 text-sm">
+        Don't have an account?{" "}
+        <Link to="/signup" className="text-blue-600 hover:underline">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
-};
+}
 
 export default Login;

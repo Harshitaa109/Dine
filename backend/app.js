@@ -1,27 +1,35 @@
 const express = require("express");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 const cors = require("cors");
-require("dotenv").config(); // Load environment variables
+
+const manualMealRoutes = require("./routes/manualMealRoutes");
+const suggestedMealRoutes = require("./routes/suggestedMealRoutes");
+const savedMealsRoutes = require("./routes/savedMealRoutes");
+const userRoutes = require('./routes/userRoutes');
+
+dotenv.config();
 
 const app = express();
 
-// ✅ Middleware
-app.use(cors());
-app.use(express.json());
+// Middleware
+app.use(cors()); // Allow all origins
+app.use(express.json()); // Body parser for JSON
 
-// ✅ Import Routes
-const mealPlanRoutes = require("./routes/mealPlanRoutes");
-const authRoutes = require("./routes/authRoutes");
-
-
-// ✅ Mount Routes
-app.use("/api/mealplan", mealPlanRoutes);
-app.use("/api/auth", authRoutes);
-
-
-
-// ✅ Health Check Route
+// Health Check
 app.get("/", (req, res) => {
-  res.send("🍽️ DineBoard API is running!");
+  res.send("🍽️ DineBoard Backend is running!");
+});
+
+// API Routes
+app.use("/api/manual-meals", manualMealRoutes);
+app.use("/api/suggested-meals", suggestedMealRoutes);
+app.use("/api/saved-meals", savedMealsRoutes);
+app.use('/api/users', userRoutes);
+
+// Fallback 404
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
 });
 
 module.exports = app;

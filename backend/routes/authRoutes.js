@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
-// Controller functions
-const { registerUser, loginUser } = require("../controllers/authController");
+// Signup dummy route (no user creation)
+router.post("/signup", (req, res) => {
+  res.status(200).json({ message: "Signup disabled" });
+});
 
-// Routes
-router.post("/signup", registerUser);  // ✅ POST /api/auth/signup
-router.post("/login", loginUser);      // ✅ POST /api/auth/login
+// Login dummy route (no auth)
+router.post("/login", (req, res) => {
+  res.status(200).json({ message: "Login disabled" });
+});
 
 module.exports = router;

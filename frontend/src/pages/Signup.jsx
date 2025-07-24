@@ -1,59 +1,96 @@
+// frontend/src/pages/Signup.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-const Signup = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Signup = ({ onSignup }) => {
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", {
-        email,
-        password,
-      });
-      alert("Signup successful! Please log in.");
-      navigate("/login");
+      const res = await axios.post(
+        "http://localhost:5000/api/users/signup",
+        form,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      // Save token to localStorage for authenticated requests
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      onSignup?.(res.data);
+      navigate("/");
     } catch (err) {
-      alert("Signup failed: " + err.response.data.message);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Signup failed. Please try again."
+      );
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={handleSignup}
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-700">Sign Up</h2>
+    <div className="max-w-md mx-auto mt-20 p-6 bg-white shadow-md rounded">
+      <h2 className="text-2xl font-semibold mb-4 text-center">
+        Create an Account
+      </h2>
 
-        <label className="block mb-2 text-sm font-medium text-gray-600">Email</label>
+      {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          name="name"
+          placeholder="Name"
+          value={form.name}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border rounded"
+          required
+        />
         <input
           type="email"
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border rounded"
           required
         />
-
-        <label className="block mb-2 text-sm font-medium text-gray-600">Password</label>
         <input
           type="password"
-          className="w-full px-4 py-2 border rounded-md mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border rounded"
           required
         />
-
         <button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-md"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
           Sign Up
         </button>
       </form>
+
+      <p className="text-center mt-4 text-sm">
+        Already have an account?{" "}
+        <Link to="/login" className="text-blue-600 hover:underline">
+          Login
+        </Link>
+      </p>
     </div>
   );
 };
