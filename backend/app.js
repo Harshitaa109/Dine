@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 
 const manualMealRoutes = require("./routes/manualMealRoutes");
-const suggestedMealRoutes = require("./routes/suggestedMealRoutes");
+const suggestedMealRoutes = require("./routes/SuggestedMealRoutes");
 const savedMealsRoutes = require("./routes/savedMealRoutes");
 const userRoutes = require('./routes/userRoutes');
 
