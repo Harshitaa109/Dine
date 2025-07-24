@@ -18,7 +18,7 @@ const Signup = ({ onSignup }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/users/signup",
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/signup`,
         form,
         {
           headers: { "Content-Type": "application/json" },
