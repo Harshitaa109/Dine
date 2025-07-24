@@ -31,9 +31,9 @@ const DailySummary = () => {
   const calculateTotal = async () => {
     try {
       const [manualRes, suggestedRes, savedRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/manual-meals"),
-        axios.get("http://localhost:5000/api/suggested-meals"),
-        axios.get("http://localhost:5000/api/saved-meals"),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/manual-meals`),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/suggested-meals`),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/saved-meals`),
       ]);
 
       const allMeals = [...manualRes.data, ...suggestedRes.data, ...savedRes.data];
