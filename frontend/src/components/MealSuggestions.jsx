@@ -3645,7 +3645,7 @@ const MealSuggestions = () => {
 
       const nutrientString = `Calories: ${recipe.calories} kcal, Protein: ${protein} g, Carbs: ${carbs} g, Fat: ${fat} g`;
 
-      await axios.post("http://localhost:5000/api/suggested-meals", {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/suggested-meals`, {
         name: recipe.label,
         calories: recipe.calories,
         protein,
